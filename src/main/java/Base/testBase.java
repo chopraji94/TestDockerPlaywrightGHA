@@ -22,7 +22,7 @@ public class testBase {
     public void beforeClass() {
         System.out.println("Before Class: Preparing test class...");
         playwright = Playwright.create();
-        BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions().setHeadless(true).setArgs(List.of("--start-maximized"));
+        BrowserType.LaunchOptions launchOptions = new BrowserType.LaunchOptions().setHeadless(false).setArgs(List.of("--start-maximized"));
         browser = playwright.chromium().launch(launchOptions);
         context = browser.newContext(new Browser.NewContextOptions().setViewportSize(null));
         page = context.newPage();
