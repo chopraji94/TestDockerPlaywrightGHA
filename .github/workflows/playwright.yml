@@ -44,7 +44,7 @@ jobs:
 
       # 4. Run your tests
       - name: Run Tests
-        run: mvn clean test -DsuiteXml=${{ env.SUITE }}
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x1024x24" mvn clean test -DsuiteXml=${{ env.SUITE }}
 
       # 5. Upload artifacts (like reports or screenshots)
       - name: Upload Test Results
