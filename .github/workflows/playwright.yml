@@ -1,0 +1,55 @@
+name: Playwright Java Tests
+on:
+  workflow_dispatch:
+    inputs:
+        test_suite:
+          description: "Trigger Playwright Java Tests"
+          required: true
+          type: string
+          default: "testng.xml"
+
+
+jobs:
+  test:
+    name: Run Playwright Java Tests
+    runs-on: ubuntu-latest
+
+    # 1. Use the official Microsoft Docker image for Playwright Java
+    # Ensure the version (v1.44.0) matches your pom.xml dependency version
+    container:
+      image: mcr.microsoft.com/playwright/java:v1.44.0-jammy
+
+    env:
+      SUITE: ${{ github.event.inputs.test_suite }}
+
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      # 2. Build the classpath to access the Playwright CLI from the container
+      - name: Generate Classpath
+        run: mvn dependency:build-classpath -Dmdep.outputFile=cp.txt
+
+      # 3. Install Playwright Browsers (Crucial even in Docker to ensure binaries are ready)
+      - name: Install Playwright Browsers
+        run: java -cp "$(cat cp.txt)" com.microsoft.playwright.CLI install
+
+      # 4. Run your tests
+      - name: Run Tests
+        run: mvn clean test -DsuiteXmlFile=${{ env.SUITE }}
+
+      # 5. Upload artifacts (like reports or screenshots)
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: target/surefire-reports/
